@@ -25,11 +25,5 @@ abstract class BaseIntegrationTest {
                 "tcp://${activeMQContainer.host}:${activeMQContainer.getMappedPort(61616)}"
             )
         }
-
-        @JvmStatic
-        @AfterAll
-        fun tearDown() {
-            activeMQContainer.stop()
-        }
     }
 }
