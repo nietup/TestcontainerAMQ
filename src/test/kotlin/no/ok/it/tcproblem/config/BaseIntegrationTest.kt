@@ -1,35 +1,26 @@
 package no.ok.it.tcproblem.config
 
-import org.junit.jupiter.api.AfterAll
-import org.junit.jupiter.api.BeforeAll
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.ActiveProfiles
-import org.testcontainers.containers.GenericContainer
-import org.testcontainers.containers.wait.strategy.Wait
+import org.springframework.test.context.DynamicPropertyRegistry
+import org.springframework.test.context.DynamicPropertySource
+import org.testcontainers.activemq.ActiveMQContainer
+import org.testcontainers.junit.jupiter.Container
+import org.testcontainers.junit.jupiter.Testcontainers
 
+@Testcontainers
 @SpringBootTest
 @ActiveProfiles("test")
 abstract class BaseIntegrationTest {
     companion object {
+        @Container
         @JvmStatic
-        val activeMQContainer: GenericContainer<*> = GenericContainer("rmohr/activemq:5.15.9")
-            .withExposedPorts(61616)
-            .waitingFor(Wait.forListeningPort())
+        val activeMQContainer: ActiveMQContainer = ActiveMQContainer("apache/activemq-classic:5.18.3")
 
+        @DynamicPropertySource
         @JvmStatic
-        @BeforeAll
-        fun setup() {
-            activeMQContainer.start()
-            System.setProperty(
-                "jms.activemq.brokerUrl",
-                "tcp://${activeMQContainer.host}:${activeMQContainer.getMappedPort(61616)}"
-            )
-        }
-
-        @JvmStatic
-        @AfterAll
-        fun tearDown() {
-            activeMQContainer.stop()
+        fun amqProperties(registry: DynamicPropertyRegistry) {
+            registry.add("jms.activemq.brokerUrl") { activeMQContainer.brokerUrl }
         }
     }
 }
